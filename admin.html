@@ -1,0 +1,120 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="UTF-8" />
+    <meta
+      http-equiv="Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
+    <meta
+      http-equiv="X-Content-Security-Policy"
+      content="default-src 'self'; script-src 'self'"
+    />
+    <title>Add Birds to Guide</title>
+  </head>
+  <body>
+
+    <div id="formDiv">
+        <label for="EnglishNameInput">English Name</label>
+        <input id="EnglishNameInput" type="text"><br>
+
+        <label for="LatinNameInput">Latin Name</label>
+        <input id="LatinNameInput" type="text"><br>
+
+        <!-- TODO should reference a group i.e dropdown? -->
+        <label for="GroupNameInput">Group Name</label>
+        <input id="GroupNameInput" type="text"><br>
+
+        <label for="HowToIdInput">How to identify</label>
+        <input id="HowToIdInput" type="text"><br>
+
+        <!-- TODO Each bird can have many key Features, how do i input this? -->
+        <label for="KeyFeaturesInput">Key Features</label>
+        <input id="KeyFeaturesInput" type="text"><br>
+
+
+        <label for="ConservationStatusInput">Conservation Status</label>
+        <input id="ConservationStatusInput" type="text"><br>
+
+        <label for="DietInput">Diet</label>
+        <input id="DietInput" type="text"><br>
+
+        <label for="BeakInput">Beak</label>
+        <input id="BeakInput" type="text"><br>
+
+        <label for="FeatherInput">Feather</label>
+        <input id="FeatherInput" type="text"><br>
+
+        <label for="LegInput">Leg</label>
+        <input id="LegInput" type="text"><br>
+
+        <label for="LengthMinInput">Length Min (cm)</label>
+        <input id="LengthMinInput" type="number"><br>
+
+        <label for="LengthMaxInput">Length Max (cm)</label>
+        <input id="LengthMaxInput" type="number"><br>
+
+        <label for="WingspanMinInput">Wingspan Min (cm)</label>
+        <input id="WingspanMinInput" type="number"><br>
+
+        <label for="WingspanMaxInput">Wingspan Max (cm)</label>
+        <input id="WingspanMaxInput" type="number"><br>
+
+        <label for="WeightMinInput">Weight Min (g)</label>
+        <input id="WeightMinInput" type="number"><br>
+
+        <label for="WeightMaxInput">Weight Max (g)</label>
+        <input id="WeightMaxInput" type="number"><br>
+
+        <label for="EuropeanPopulationMinInput">European Population Min</label>
+        <input id="EuropeanPopulationMinInput" type="number"><br>
+
+        <label for="EuropeanPopulationMaxInput">European Population Max</label>
+        <input id="EuropeanPopulationMaxInput" type="number"><br>
+
+        <label for="UKBreedingPairsMinInput">UK Breeding Pairs Min</label>
+        <input id="UKBreedingPairsMinInput" type="number"><br>
+
+        <label for="UKBreedingPairsMaxInput">UK Breeding Pairs Max</label>
+        <input id="UKBreedingPairsMaxInput" type="number"><br>
+
+        <label for="DifficultyRatingInput">Difficulty Rating</label>
+        <input id="DifficultyRatingInput" type="text"><br>
+
+        <label for="WhereWhenStatementInput">Where & When Statement</label>
+        <input id="WhereWhenStatementInput" type="text"><br>
+
+        <label for="HabitatDescriptionInput">Habitat Description</label>
+        <input id="HabitatDescriptionInput" type="text"><br>
+
+        <div id="monthsDiv">
+            <label for="JanCB">Jan</label><input type="checkbox" id="JanCB"><br>
+            <label for="FebCB">Feb</label><input type="checkbox" id="FebCB"><br>
+            <label for="MarCB">Mar</label><input type="checkbox" id="MarCB"><br>
+            <label for="AprCB">Apr</label><input type="checkbox" id="AprCB"><br>
+            <label for="MayCB">May</label><input type="checkbox" id="MayCB"><br>
+            <label for="JunCB">Jun</label><input type="checkbox" id="JunCB"><br>
+            <label for="JulCB">Jul</label><input type="checkbox" id="JulCB"><br>
+            <label for="AugCB">Aug</label><input type="checkbox" id="AugCB"><br>
+            <label for="SepCB">Sep</label><input type="checkbox" id="SepCB"><br>
+            <label for="OctCB">Oct</label><input type="checkbox" id="OctCB"><br>
+            <label for="NovCB">Nov</label><input type="checkbox" id="NovCB"><br>
+            <label for="DecCB">Dec</label><input type="checkbox" id="DecCB"><br>
+        </div>
+
+        <button id="addBirdButton">Add Bird!</button>
+
+    </div>
+    
+    <p id="birdInfo">
+    
+        Month
+
+        Range_Map
+        Images
+        Call
+    </p>
+
+  </body>
+  <script src="./renderer.js"></script>
+</html>

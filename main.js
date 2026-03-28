@@ -13,7 +13,7 @@ const createWindow = () => {
     }
   })
 
-  win.loadFile('index.html')
+  win.loadFile('admin.html')
 }
 
 
@@ -45,7 +45,7 @@ async function queryData(event, data) {
 
 async function query() {
   return new Promise((resolve, reject) => {
-    const database = new sqlite3.Database('./public/app_database');
+    const database = new sqlite3.Database('./public/app_database.sqlite');
     database.all('SELECT * FROM bird_sample', (error, rows) => {
       if (error) {
         reject(error); // Reject the promise if there's an error

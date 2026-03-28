@@ -1,3 +1,13 @@
+# My Own Scratch Pad Folder
+research/
+
+# User uploaded files
+public/user/images/*
+!public/user/images/.gitkeep
+
+public/user/sounds/*
+!public/user/sounds/.gitkeep
+
 # Logs
 logs
 *.log
