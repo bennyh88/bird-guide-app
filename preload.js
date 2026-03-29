@@ -12,10 +12,10 @@ contextBridge.exposeInMainWorld(
   'api', {
     // From render to main and back again
     doInvoke: (channel, data) => {
-      let validChannels = ["fetchAllRecords"];
+      let validChannels = ["addBirdRecord", "fetchAllRecords"];
 
       if (validChannels.includes(channel)) {
-        return ipcRenderer.invoke('fetchAllRecords', data);
+        return ipcRenderer.invoke(channel, data);
       }
     }
     

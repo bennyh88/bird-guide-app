@@ -19,8 +19,20 @@ const addBirdButton = document.getElementById('addBirdButton');
 addBirdButton.addEventListener('click', addBird);
 
 function addBird() {
+  // collect the form Data
   bird = constructBird();
   console.log(bird);
+
+  // Pass the bird object to the main.js process to send to the database
+  window.api.doInvoke('addBirdRecord', bird)
+  .then((response) => {
+    if (response === true) {
+      document.getElementById('messagebox').innerText = "Successfully Added Bird!";
+    }
+    document.getElementById('messagebox').innerText = "Failed to Add Bird!";
+    console.log(response);
+  });
+
 }
 
 
@@ -66,7 +78,7 @@ function constructBird() {
   monthsResident.dec = isChecked(document.getElementById('DecCB'));
   
   bird.monthsResident = monthsResident;
-  
+
   return bird
 }
 
