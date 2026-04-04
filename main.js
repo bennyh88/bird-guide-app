@@ -12,16 +12,6 @@ const db = new Database(path.join(__dirname, 'public', 'app_database.sqlite'), {
 });
 
 
-// const sqlite3 = require('sqlite3');
-// const { open } = require('sqlite');
-
-
-
-// const global = {
-//   DBPATH : './public/app_database.sqlite'
-// };
-
-
 const createWindow = () => {
 
   const win = new BrowserWindow({
@@ -32,12 +22,20 @@ const createWindow = () => {
     }
   })
 
-  win.loadFile('admin.html')
+  // win.loadFile('admin.html')
+  win.loadFile('birdGuide.html')
 }
 
 
 app.whenReady().then(() => {
-  ipcMain.handle('ping', () => 'pong');
+
+  ipcMain.handle('fetchBirdList', async (event, data) => { 
+    console.log("fetchBirdList!");
+    response = fetchBirdList();
+    return response
+  });
+
+  // ipcMain.handle('ping', () => 'pong');
   ipcMain.handle('fetchAllRecords', async (event, data) => { 
     console.log("fetchAllRecords!");
   });
@@ -56,60 +54,157 @@ app.whenReady().then(() => {
 
 })
 
+
+async function query() {
+  return new Promise((resolve, reject) => {
+    const database = new sqlite3.Database('./public/app_database.sqlite');
+    database.all('SELECT * FROM bird_sample', (error, rows) => {
+      if (error) {
+        reject(error); // Reject the promise if there's an error
+      } else {
+        resolve(rows); // Resolve the promise with the result
+      }
+    });
+  });
+}
+
+
+
+// function fetchBirdList() {
+//   const statement = db.prepare(`
+//     SELECT bg.group_description, bh.english_name
+//     FROM bird_groups bg
+//     LEFT JOIN bird_header bh
+//     ON bh.group_id = bg.group_id
+//     WHERE bh.english_name is not null
+//     ORDER BY bg.group_index asc`
+//   );
+//   try {
+//     result = statement.get();
+//     return result
+//   } catch (err) {
+//     return err
+//   }
+// }
+
+function fetchBirdList() {
+  return new Promise((resolve, reject) => {
+    const statement = db.prepare(`
+      SELECT bg.group_index, bg.group_name, bg.group_description, bh.english_name
+      FROM bird_groups bg
+      LEFT JOIN bird_header bh
+      ON bh.group_id = bg.group_id
+      WHERE bh.english_name is not null
+      AND bg.group_description != 'No Group Assigned'
+      ORDER BY bg.group_index asc`
+    );
+    try {
+      result = []
+
+      for (const row of statement.iterate()) {
+        let count = 0;
+
+        result.forEach((group) => {
+          // if the group exists add bird to members
+          if (group.index === row.group_index) {
+            group.members.push(row.english_name)
+            count++;
+          }
+        });
+
+        if (count == 0) {
+          // create a new group and append bird to it
+          const group = {
+            index: row.group_index,
+            groupName: row.group_name,
+            groupDescription: row.group_description,
+            members: [row.english_name]
+          }
+          result.push(group)
+        }
+      }
+
+      resolve(result);
+      
+    } catch (err) {
+      reject(err);
+    }
+  });
+
+}
+
+// function fetchBirdList() {
+//   return new Promise((resolve, reject) => {
+//     const statement = db.prepare(`
+//       SELECT bg.group_description, bh.english_name
+//       FROM bird_groups bg
+//       LEFT JOIN bird_header bh
+//       ON bh.group_id = bg.group_id
+//       WHERE bh.english_name is not null
+//       ORDER BY bg.group_index asc`
+//     );
+//     try {
+//       result = statement.all();
+//       resolve(result);
+//     } catch (err) {
+//       reject(err);
+//     }
+//   });
+
+// }
+
+//   const statement = db.prepare(`
+//     SELECT bg.group_description, bh.english_name
+//     FROM bird_groups bg
+//     LEFT JOIN bird_header bh
+//     ON bh.group_id = bg.group_id
+//     WHERE bh.english_name is not null
+//     ORDER BY bg.group_index asc`
+//   );
+
+//   result = statement.get();
+//   console.log(result);
+//   return result
+
+// }
+
+
 async function fetchAllRecords(event, data) {
   // console.log(event)
   // console.log(data)
   // return await query()
 }
 
-// async function query() {
-//   return new Promise((resolve, reject) => {
-//     const database = new sqlite3.Database('./public/app_database.sqlite');
-//     database.all('SELECT * FROM bird_sample', (error, rows) => {
-//       if (error) {
-//         reject(error); // Reject the promise if there's an error
-//       } else {
-//         resolve(rows); // Resolve the promise with the result
-//       }
-//     });
-//   });
-// }
-
-// function getDatabaseConnection() {
-//   return new Promise((resolve, reject) => {
-//     if (global.database === undefined) {
-//       try {
-//         global.database = new sqlite3.Database(global.DBPATH);
-//       } catch (error) {
-//         console.log("Error Connecting to Database");
-//         console.log(error);
-//         reject(error);
-//       }
-//     }
-//     resolve(global.database);
-//   });
-// }
 
 function addBirdRecord(channel, bird) {
   
-  const insert_bird_header = db.prepare('INSERT INTO bird_header (bird_id, group_id, english_name, latin_name) VALUES (?, ?, ?, ?)');
-
   console.log(bird);
 
-  const attr = {
-    attribute_id: "attribute_id", 
-    attribute_name: "attribute_name", 
-    attribute_value: "attribute_value", 
-    bird_id: "bird_id"
+  // Get the ID for the new Bird
+  const bird_id = getNextId('header_counter');
+  const group_id = getNextId('group_counter');
+
+  const insert_bird_header = db.prepare('INSERT INTO bird_header (bird_id, group_id, english_name, latin_name, international_name) VALUES (?, ?, ?, ?)');
+  try {
+    insert_bird_header.run(bird_id, group_id, bird.header.englishName, bird.header.latinName);
+    return true
+
+  } catch (err) {
+    console.log(err);
+    console.log(`Failed to insert to bird_header: ${bird.header.englishName}`);
   }
-  insertBirdAttribute('text', attr);
   
+  bird.attributes.forEach((attribute) => {
+    attribute.attribute_id = getNextId('attribute_counter');
+    insertBirdAttribute(bird_id, attribute);
+  });
+ 
 }
 
 
-function insertBirdAttribute(type, attribute) {
+function insertBirdAttribute(bird_id, attribute) {
   let statement = '';
-  switch (type) {
+  switch (attribute.attribute_type) {
     case "text":
       statement = db.prepare('INSERT INTO bird_attributes_text (attribute_id, attribute_name, attribute_value, bird_id) VALUES (?, ?, ?, ?)');
       break;
@@ -123,11 +218,11 @@ function insertBirdAttribute(type, attribute) {
       break;
 
     default:
-      console.log(`Unknown Attribute Type: ${type}`);
+      console.log(`Unknown Attribute Type: ${attribute.attribute_type}`);
       return false
   }
   try {
-    statement.run(attribute.attribute_id, attribute.attribute_name, attribute.attribute_value, attribute.bird_id);
+    statement.run(attribute.attribute_id, attribute.attribute_name, attribute.attribute_value, bird_id);
     return true
 
   } catch (err) {
@@ -137,42 +232,39 @@ function insertBirdAttribute(type, attribute) {
 }
 
 
+function getNextId(counterName) {
 
-// function getNewId(counter_name) {
-//   return new Promise((resolve, reject) => {
-//     getDatabaseConnection().then(
-//       function(database) {
-//         const sql = database.prepare(
-//           `BEGIN Transaction
-//           UPDATE counters
-//           SET count = count + 1
-//           WHERE counter_name = ?
-//           RETURNING counter_prefix || printf('%06X', count) as NEW_ID
-//           COMMIT Transaction;`
-//         ).get(counter_name);
-//         console.log(sql.NEW_ID);
-//         resolve(sql.NEW_ID);
-//       },
-//       function(error) {
-//         console.log(error);
-//         reject(error);
-//       }
-//     );
-//   });  
-// }
+  const incStmt = db.prepare(`
+    UPDATE counters
+    SET counter_count = counter_count + 1
+    WHERE counter_name = ?`);
+
+  const getStmt = db.prepare(`
+    SELECT counter_prefix || printf('%08X', counter_count) AS next_id
+    FROM counters
+    WHERE counter_name = ?`
+  );
+
+  const getNextId = db.transaction((counterName) => {
+    incStmt.run(counterName);
+    const row = getStmt.get(counterName);
+    // return row ? row.value : null;
+    return row ? row.next_id : null;
+  });
+
+  try {
+    newID = getNextId(counterName);
+    console.log(newID);
+    return newID
+
+  } catch (err) {
+    console.log(err);
+    console.log(`Failed to generate new ID for counter: ${counterName}`);
+  }
+
+}
 
 
-
-// return new Promise((resolve, reject) => {
-//     const database = new sqlite3.Database('./public/app_database.sqlite');
-//     database.all('SELECT * FROM bird_sample', (error, rows) => {
-//       if (error) {
-//         reject(error); // Reject the promise if there's an error
-//       } else {
-//         resolve(rows); // Resolve the promise with the result
-//       }
-//     });
-//   });
 
 
 app.on('window-all-closed', () => {
