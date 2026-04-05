@@ -40,3 +40,7 @@ article {
 .BirdAsideUL {
   cursor:pointer;
 }
+
+#latinNameHeader {
+  font-style: italic;
+}

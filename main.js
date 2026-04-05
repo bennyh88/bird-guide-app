@@ -35,6 +35,12 @@ app.whenReady().then(() => {
     return response
   });
 
+  ipcMain.handle('loadBird', async (event, data) => { 
+    console.log("loadBird!");
+    response = loadBird(data);
+    return response
+  });
+
   // ipcMain.handle('ping', () => 'pong');
   ipcMain.handle('fetchAllRecords', async (event, data) => { 
     console.log("fetchAllRecords!");
@@ -90,7 +96,7 @@ async function query() {
 function fetchBirdList() {
   return new Promise((resolve, reject) => {
     const statement = db.prepare(`
-      SELECT bg.group_index, bg.group_name, bg.group_description, bh.english_name
+      SELECT bg.group_index, bg.group_name, bg.group_description, bh.english_name, bh.bird_id
       FROM bird_groups bg
       LEFT JOIN bird_header bh
       ON bh.group_id = bg.group_id
@@ -107,7 +113,13 @@ function fetchBirdList() {
         result.forEach((group) => {
           // if the group exists add bird to members
           if (group.index === row.group_index) {
-            group.members.push(row.english_name)
+            group.members.push(
+              {
+                englishName : row.english_name,
+                id : row.bird_id
+              }
+              
+            )
             count++;
           }
         });
@@ -118,8 +130,14 @@ function fetchBirdList() {
             index: row.group_index,
             groupName: row.group_name,
             groupDescription: row.group_description,
-            members: [row.english_name]
+            members: []
           }
+          group.members.push(
+            {
+              englishName : row.english_name,
+              id : row.bird_id
+            }
+          )
           result.push(group)
         }
       }
@@ -132,6 +150,49 @@ function fetchBirdList() {
   });
 
 }
+
+function loadBird(birdId) {
+  console.log("birdId: ", birdId);
+  return new Promise((resolve, reject) => {
+    const statement = db.prepare(`
+      SELECT 
+        bh.bird_id,
+        bh.english_name,
+        bh.international_name,
+        bh.latin_name,
+        bg.group_name,
+        bg.group_description
+      FROM bird_header bh
+      LEFT JOIN bird_groups bg
+      ON bg.group_id = bh.group_id
+      WHERE bh.bird_id = ?`
+    );
+
+    const attr_statement = db.prepare(`
+      SELECT 
+        attribute_name,
+        attribute_value
+      FROM
+        bird_attributes_text 
+      WHERE bird_id = ?`
+    );
+
+    try {
+      result = statement.get(birdId);
+      attributes = []
+      for (const row of attr_statement.iterate(birdId)) {
+        attributes.push(row);
+      }
+      // result = statement.get();
+      result["attributes"] = attributes;
+      resolve(result);
+    } catch (err) {
+      reject(err);
+    }
+  });
+
+}
+
 
 // function fetchBirdList() {
 //   return new Promise((resolve, reject) => {

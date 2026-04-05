@@ -9,7 +9,7 @@ function loadBirdList() {
       content += `<b>${group.groupDescription}</b>`;
       content += `<ul>`;
       group.members.forEach((member) => {
-        content += `<li class="BirdAsideUL">${member}</li>`;
+        content += `<li id="${member.id}" class="BirdAsideUL">${member.englishName}</li>`;
       });
       content += `</ul>`;
     });
@@ -20,11 +20,23 @@ function loadBirdList() {
     let birds = document.querySelectorAll('aside li');
     birds.forEach((item) => {
       item.addEventListener('click', (event) => {
-        console.log(event.target.innerHTML);
+        console.log(event.target.id);
+        loadBird(event.target.id);
       });
 
     });
 
+  });
+}
+
+function loadBird(birdId) {
+  window.api.doInvoke('loadBird', birdId)
+  .then((response) => {
+    console.log(response);
+    document.getElementById('groupDescriptionHeader').innerHTML = response.group_description;
+    document.getElementById('englishNameHeader').innerHTML = response.english_name;
+    document.getElementById('internationalNameHeader').innerHTML = response.international_name;
+    document.getElementById('latinNameHeader').innerHTML = response.latin_name;
   });
 }
 
