@@ -1,12 +1,18 @@
 h1, h2, h3 {
-  text-align: left;
+  text-align: start;
+  padding: 5px;
+  margin: 0px;
+
 }
 
 body {
+  /* box-sizing: border-box; */
+  overflow: hidden;
   display: grid;
   grid-template-areas:
-    "nav nav"
+    "aside nav"
     "aside header"
+    "aside article"
     "aside article";
   grid-template-columns: 1fr 4fr;
   gap: 3px;
@@ -22,6 +28,8 @@ nav {
 
 aside {
   grid-area: aside;
+  height: 98vh;
+  overflow: auto;
   text-align: left;
   background-color: grey;
 }
@@ -29,6 +37,7 @@ aside {
 header {
   grid-area: header;
   text-align: center;
+  height: fit-content;
 }
 
 article {
@@ -39,8 +48,17 @@ article {
 
 .BirdAsideUL {
   cursor:pointer;
+  padding: 2px;
+  list-style-type: none;
 }
 
 #latinNameHeader {
   font-style: italic;
+}
+
+article td {
+  min-width: 200px;
+  padding: 5px;
+  text-align: left;
+  vertical-align: top;
 }

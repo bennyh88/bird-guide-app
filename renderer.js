@@ -6,7 +6,7 @@ function loadBirdList() {
     
     let content = '';
     response.forEach((group) => {
-      content += `<b>${group.groupDescription}</b>`;
+      content += `<li><b>${group.groupDescription}</b></li>`;
       content += `<ul>`;
       group.members.forEach((member) => {
         content += `<li id="${member.id}" class="BirdAsideUL">${member.englishName}</li>`;
@@ -37,6 +37,24 @@ function loadBird(birdId) {
     document.getElementById('englishNameHeader').innerHTML = response.englishName;
     document.getElementById('internationalNameHeader').innerHTML = response.internationalName;
     document.getElementById('latinNameHeader').innerHTML = response.latinName;
+
+    
+    attributesContent = '';
+
+    const categories = response.attributeCategories;
+    for (const category in categories) {
+      attributesContent += `<h3 id=${categories[category].attributeCategoryName}>${categories[category].attributeCategoryDisplayName}</h3>\n`;
+
+      attributesContent += `<table>`;
+      const attributes = categories[category].attributes;
+      for (const attribute in attributes){
+        attributesContent += `<tr><td>${attributes[attribute].attributeDisplayName}</td><td>${attributes[attribute].attributeValue}</td></tr>`;
+      }
+      attributesContent += `</table>`;
+    }
+
+    document.getElementById('attributesDiv').innerHTML = attributesContent;
+
   });
 }
 
