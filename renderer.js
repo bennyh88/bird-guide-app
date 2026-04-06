@@ -33,10 +33,10 @@ function loadBird(birdId) {
   window.api.doInvoke('loadBird', birdId)
   .then((response) => {
     console.log(response);
-    document.getElementById('groupDescriptionHeader').innerHTML = response.group_description;
-    document.getElementById('englishNameHeader').innerHTML = response.english_name;
-    document.getElementById('internationalNameHeader').innerHTML = response.international_name;
-    document.getElementById('latinNameHeader').innerHTML = response.latin_name;
+    document.getElementById('groupDescriptionHeader').innerHTML = response.groupDescription;
+    document.getElementById('englishNameHeader').innerHTML = response.englishName;
+    document.getElementById('internationalNameHeader').innerHTML = response.internationalName;
+    document.getElementById('latinNameHeader').innerHTML = response.latinName;
   });
 }
 

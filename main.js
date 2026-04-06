@@ -156,12 +156,12 @@ function loadBird(birdId) {
   return new Promise((resolve, reject) => {
     const statement = db.prepare(`
       SELECT 
-        bh.bird_id,
-        bh.english_name,
-        bh.international_name,
-        bh.latin_name,
-        bg.group_name,
-        bg.group_description
+        bh.bird_id AS birdId,
+        bh.english_name AS englishName,
+        bh.international_name AS internationalName,
+        bh.latin_name AS latinName,
+        bg.group_name AS groupName,
+        bg.group_description AS groupDescription
       FROM bird_header bh
       LEFT JOIN bird_groups bg
       ON bg.group_id = bh.group_id
@@ -170,21 +170,64 @@ function loadBird(birdId) {
 
     const attr_statement = db.prepare(`
       SELECT 
-        attribute_name,
-        attribute_value
+        acd.attribute_category_index,
+        acd.attribute_category_name,
+        bat.attribute_name,
+        bat.attribute_value,
+        ifnull(
+          (
+            SELECT display_text 
+            FROM language_map 
+            WHERE internal_text = bat.attribute_name 
+            AND language = 'ENGLISH'
+          ), 
+          bat.attribute_name
+        ) AS attribute_display_name
       FROM
-        bird_attributes_text 
-      WHERE bird_id = ?`
+        bird_attributes_text bat
+        
+      LEFT JOIN
+        attribute_category_mapping acm
+      ON
+        acm.attribute_name = bat.attribute_name
+        
+      LEFT JOIN
+        attribute_category_definition acd
+      ON 
+        acd.attribute_category_name = acm.attribute_category_name
+
+      WHERE 
+        bat.bird_id = ?
+
+      ORDER BY
+        acd.attribute_category_index, bat.attribute_name`
     );
 
     try {
       result = statement.get(birdId);
-      attributes = []
+
+      attributeCategories = {}
       for (const row of attr_statement.iterate(birdId)) {
-        attributes.push(row);
+        const attribute = {
+          attributeDisplayName: row.attribute_display_name,
+          attributeName: row.attribute_name,
+          attributeValue: row.attribute_value
+        }
+        if (attributeCategories[row.attribute_category_index]) {
+          attributeCategories[row.attribute_category_index].attributes.push(attribute);
+        } else {
+          attributeCategories[row.attribute_category_index] = {
+            attributeCategoryIndex: row.attribute_category_index,
+            attributeCategoryName: row.attribute_category_name,
+            attributeCategoryDisplayName: row.attribute_category_name,
+            attributes: []
+          }
+          attributeCategories[row.attribute_category_index].attributes.push(attribute);
+        }
+
       }
-      // result = statement.get();
-      result["attributes"] = attributes;
+
+      result["attributeCategories"] = attributeCategories;
       resolve(result);
     } catch (err) {
       reject(err);
